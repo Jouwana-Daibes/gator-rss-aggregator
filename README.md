@@ -5,7 +5,7 @@ Gator is a CLI tool designed to aggregate RSS feeds, manage users, and interact 
 - User Management: Register new users and log in with existing users.
 - RSS Feed Aggregation: Add RSS feeds, view summaries of the posts, and manage them through the CLI.
 - PostgreSQL Integration: Stores user data and feed information in a PostgreSQL database.
-- 
+
 # Prerequisites
 Before using Gator, make sure you have the following installed:
 - Node.js (>= 16.0.0)
@@ -40,15 +40,16 @@ Before running the application, create the gator database in PostgreSQL.
 ```
 psql -U postgres
 CREATE DATABASE gator;
-Configuration
 ```
-Create a .gatorconfig.json file in your home directory with the following structure:
+# Configuration
 
+Create a .gatorconfig.json file in your home directory with the following structure:
+```
 {
   "db_url": "postgres://<username>:<password>@localhost:5432/gator?sslmode=disable",
   "current_user_name": "your_username"
 }
-
+```
 Replace <username> and <password> with your PostgreSQL credentials.
 
 # Usage
@@ -58,24 +59,22 @@ Replace <username> and <password> with your PostgreSQL credentials.
 ```
 npm run start register <username>
 ```
-- Log in:
+    - Log in:
 ```
 npm run start login <username>
 ```
-- List all users:
+    - List all users:
 ```
 npm run start users
-Command Overview
-register <username>
-````
+```
+# Command Overview
+- register <username>
 This command registers a new user with the specified username. It will check if the user already exists and create a new user in the database if not.
 
 - login <username>
-
 This command logs in a user by setting the current_user_name in the configuration. If the user does not exist, it throws an error.
 
 - users
-
  Lists all the users in the PostgreSQL database.
 
 # Development
@@ -88,7 +87,4 @@ npm run test
 You can extend Gator by adding new commands to the commands.ts file. Follow the existing structure of command handlers to register and run new commands.
 
 # License
-This project is licensed under the MIT License.
-
-This project is licensed under the MIT License - see the LICENSE
- file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
