@@ -20,7 +20,7 @@ If you don't have Node.js installed, you can install it by following the officia
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 ```
-
+---
   - **macOS**: You can install PostgreSQL using Homebrew:
 ```
 brew install postgresql
@@ -67,15 +67,16 @@ npm run start login <username>
 ```
 npm run start users
 ```
+---
 # Command Overview
 
-- **register <username>**:
+- **register \<username>\**:
   This command registers a new user with the specified username. It will check if the user already exists and create a new user in the database if not.
-- **login <username>**:
+- **login \<username>\**:
   This command logs in a user by setting the current_user_name in the configuration. If the user does not exist, it throws an error.
 - **users**:
 - Lists all the users in the PostgreSQL database.
-
+---
 # Development
 - Running Tests
 Make sure to run the tests to ensure everything works as expected.
