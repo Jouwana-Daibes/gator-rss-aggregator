@@ -27,8 +27,14 @@ If you don't have Node.js installed, you can install it by following the officia
 # Installation
 ```
 Clone the repository
+```
+```
 git clone <repository-url>
+```
+```
 cd gator-rss-aggregator
+```
+```
 Install Dependencies
 npm install
 ```
@@ -37,6 +43,8 @@ npm install
 Before running the application, create the gator database in PostgreSQL.
 ```
 psql -U postgres
+```
+```
 CREATE DATABASE gator;
 ```
 # Configuration
