@@ -14,19 +14,16 @@ Before using Gator, make sure you have the following installed:
 
 If you don't have Node.js installed, you can install it by following the official guide.
 
----
 - Install PostgreSQL
   - **Linux**: Install PostgreSQL using your system's package manager. For example, on Ubuntu:
-```
+```bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 ```
----
   - **macOS**: You can install PostgreSQL using Homebrew:
-```
+```bash
 brew install postgresql
 ```
----
 # Installation
 ```
 Clone the repository
@@ -53,23 +50,23 @@ Create a .gatorconfig.json file in your home directory with the following struct
 ```
 Replace <username> and <password> with your PostgreSQL credentials.
 
----
+
 # Usage
 - Start the CLI tool
 - To start the Gator CLI tool, use the following commands:
     - Register a new user:
-```
+```bash
 npm run start register <username>
 ```
     - Log in:
-```
+```bash
 npm run start login <username>
 ```
     - List all users:
-```
+```bash
 npm run start users
 ```
----
+
 # Command Overview
 
 - **register \<username>**:
