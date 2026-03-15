@@ -36,6 +36,8 @@ cd gator-rss-aggregator
 ```
 ```
 Install Dependencies
+```
+```
 npm install
 ```
 # Create the Database
