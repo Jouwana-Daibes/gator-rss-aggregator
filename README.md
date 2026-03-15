@@ -54,15 +54,15 @@ Replace <username> and <password> with your PostgreSQL credentials.
 # Usage
 - Start the CLI tool
 - To start the Gator CLI tool, use the following commands:
-    - Register a new user:
+  - Register a new user:
 ```bash
 npm run start register <username>
 ```
-    - Log in:
+  - Log in:
 ```bash
 npm run start login <username>
 ```
-    - List all users:
+  - List all users:
 ```bash
 npm run start users
 ```
