@@ -9,6 +9,8 @@ import { createFeedFollow, getFeedByUrl, getFeedFollowsForUser } from "./lib/db/
 import { feedFollows } from "./lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { middlewareLoggedIn } from "./commands.js";
+import { getFeedByUrl } from "./lib/db/queries/feedFollows";
+import { deleteFeedFollow } from "./lib/db/queries/feedFollows";
 
 // Command handler type
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>
@@ -242,3 +244,21 @@ export function middlewareLoggedIn(
 }
 
 
+export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]) {
+  const url = args[0];
+
+  if (!url) {
+    console.error("Usage: unfollow <feed_url>");
+    process.exit(1);
+  }
+
+  const feed = await getFeedByUrl(url);
+  if (!feed) {
+    console.error("Feed not found for URL:", url);
+    process.exit(1);
+  }
+
+  await deleteFeedFollow(user.id, feed.id);
+
+  console.log(`${user.name} has unfollowed ${feed.name}`);
+}
