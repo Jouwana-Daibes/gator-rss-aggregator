@@ -173,7 +173,7 @@ export async function handlerFollow(cmdName: string, ...args: string[]) {
     process.exit(1);
   }
 
-const existingFollow = await db
+/*const existingFollow = await db
   .select()
   .from(feedFollows)
   .where(
@@ -187,7 +187,7 @@ const existingFollow = await db
   if (existingFollow.length > 0) {
     console.log(`${user.name} is already following ${feed.name}`);
     return;
-  }
+  }*/
 
   const follow = await createFeedFollow(user.id, feed.id);
   console.log(`${follow.userName} is now following ${follow.feedName}`);
@@ -196,7 +196,11 @@ const existingFollow = await db
 
 export async function handlerFollowing() {
   const config = readConfig();
-  const user = await getUser(config.currentUserName);
+  const user = await getUserByName(config.currentUserName);
+    if (!user) {
+    console.error("User not found");
+    process.exit(1);
+  }
   const follows = await getFeedFollowsForUser(user.id);
 
   for (const f of follows) {

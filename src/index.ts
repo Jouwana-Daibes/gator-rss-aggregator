@@ -29,9 +29,9 @@ async function main() {
   registerCommand(registry, "users", handlerList);
   registerCommand(registry, "agg", handlerAgg)
   registerCommand(registry, "addfeed", handlerAddFeed)
-  registerCommand(registry, "following", handlerFeeds);
+  //registerCommand(registry, "following", handlerFeeds);
   registerCommand(registry, "follow", handlerFollow);
- // registerCommand(registry, "following", handlerFollowing);
+  registerCommand(registry, "following", handlerFollowing);
 
   const args = process.argv.slice(2)
 
