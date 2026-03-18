@@ -8,6 +8,8 @@ import { createFeed, printFeed, getFeeds } from "./lib/db/queries/feeds"
 import { createFeedFollow, getFeedByUrl, getFeedFollowsForUser } from "./lib/db/queries/feedFollows";
 import { feedFollows } from "./lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { middlewareLoggedIn } from "./commands.js";
+
 // Command handler type
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>
 
@@ -113,7 +115,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
   }
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]) {
+export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
   // Join all args except the last one into the name
   const url = args[args.length - 1];
   const name = args.slice(0, args.length - 1).join(" ");
@@ -123,10 +125,10 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     console.error("Usage: addfeed <name> <url>")
     process.exit(1)
   }
-  const config = readConfig();
-  const currentUsername = config.currentUserName;
-  const user = await getUserByName(currentUsername)
-//  const feed = await createFeed(name, url, user.id)
+//  const config = readConfig();
+//  const currentUsername = config.currentUserName;
+//  const user = await getUserByName(currentUsername)
+ //   const feed = await createFeed(name, url, user.id)
  // Create the feed in the DB
   const feedFollow = await createFeed(name, url, user.id);
 
@@ -134,7 +136,7 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
   await createFeedFollow(user.id, feedFollow.id);
 
   // Print info
-  console.log(`${currentUsername} is now following ${feedFollow.name}`);
+  console.log(`${user.name} is now following ${feedFollow.name}`);
   printFeed(feedFollow, user)
 }
 
@@ -149,13 +151,16 @@ export async function handlerFeeds() {
   }
 }
 
-export async function handlerFollow(cmdName: string, ...args: string[]) {
+export async function handlerFollow(cmdName: string,
+  user: User,
+  ...args: string[]) {
   const url = args[0];
   if (!url) {
     console.error("Usage: follow <url>");
     process.exit(1);
   }
 
+/*
   const config = readConfig();
   if (!config.currentUserName) {
   	console.error("No user logged in. Please login first.");
@@ -166,7 +171,7 @@ export async function handlerFollow(cmdName: string, ...args: string[]) {
     console.error("Current user not found!");
     process.exit(1);
   }
-
+*/
   const feed = await getFeedByUrl(url);
   if (!feed) {
     console.error("Feed not found for URL:", url);
@@ -194,16 +199,46 @@ export async function handlerFollow(cmdName: string, ...args: string[]) {
 }
 
 
-export async function handlerFollowing() {
-  const config = readConfig();
-  const user = await getUserByName(config.currentUserName);
-    if (!user) {
-    console.error("User not found");
-    process.exit(1);
-  }
+export async function handlerFollowing(  cmdName: string,
+  user: User,
+  ...args: string[]) {
+//  const config = readConfig();
+ // const user = await getUserByName(config.currentUserName);
+   // if (!user) {
+   // console.error("User not found");
+   // process.exit(1);
+ // }
   const follows = await getFeedFollowsForUser(user.id);
 
   for (const f of follows) {
     console.log(f.feedName);
   }
 }
+
+export type UserCommandHandler = (
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) => Promise<void>;
+
+export function middlewareLoggedIn(
+  handler: UserCommandHandler
+): CommandHandler {
+  return async (cmdName: string, ...args: string[]) => {
+    const config = readConfig();
+
+    if (!config.currentUserName) {
+      throw new Error("No user logged in");
+    }
+
+    const user = await getUserByName(config.currentUserName);
+
+    if (!user) {
+      throw new Error(`User ${config.currentUserName} not found`);
+    }
+
+    return handler(cmdName, user, ...args);
+  };
+}
+
+
