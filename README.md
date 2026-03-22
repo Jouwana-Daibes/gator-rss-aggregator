@@ -130,7 +130,7 @@ Lists all the users in the PostgreSQL database.
     ```bash
     npm run start browse [limit]
     ``` 
-# Adding New Commands
+# Extending the project
 - You can extend Gator by adding new commands to the commands.ts file. Follow the existing structure of command handlers to register and run new commands.
 - If you'd like to make this project your own, here are some ideas:
     - Add sorting and filtering options to the browse command
