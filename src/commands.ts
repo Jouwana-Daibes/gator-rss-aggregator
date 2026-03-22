@@ -3,15 +3,13 @@ import { createUser, getUserByName, getUserId } from "src/lib/db/queries/users";
 import { setUser, getUser, readConfig } from "./config"
 import { deleteAllUsers } from "src/lib/db/queries/users";
 import { getAllUsers } from "src/lib/db/queries/users";
-import { fetchFeed } from "./rss"
+//import { fetchFeed } from "../lib/rss"
 import { createFeed, printFeed, getFeeds } from "./lib/db/queries/feeds"
-import { createFeedFollow, getFeedByUrl, getFeedFollowsForUser } from "./lib/db/queries/feedFollows";
+import { createFeedFollow, getFeedByUrl, getFeedFollowsForUser, deleteFeedFollow  } from "./lib/db/queries/feedFollows";
 import { feedFollows } from "./lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { middlewareLoggedIn } from "./commands.js";
-import { getFeedByUrl } from "./lib/db/queries/feedFollows";
-import { deleteFeedFollow } from "./lib/db/queries/feedFollows";
-
+//import { middlewareLoggedIn } from "./commands.js";
+//import { scrapeFeeds, parseDuration } from "./scrapeFeeds";
 // Command handler type
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>
 
@@ -104,6 +102,7 @@ export async function handlerList(cmdName: string, ...args: string[]) {
   }
 }
 
+/*
 export async function handlerAgg(cmdName: string, ...args: string[]) {
   try {
 
@@ -116,7 +115,7 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     process.exit(1)
   }
 }
-
+*/
 export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
   // Join all args except the last one into the name
   const url = args[args.length - 1];
@@ -261,4 +260,99 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
   await deleteFeedFollow(user.id, feed.id);
 
   console.log(`${user.name} has unfollowed ${feed.name}`);
+}
+
+/*
+export async function handlerAgg(cmdName: string, ...args: string[]) {
+  const timeBetweenReqs = args[0];
+
+  const intervalMs = parseDuration(timeBetweenReqs);
+
+  console.log(`Collecting feeds every ${timeBetweenReqs}`);
+
+  await scrapeFeeds();
+
+  const interval = setInterval(() => {
+    scrapeFeeds().catch(console.error);
+  }, intervalMs);
+
+  await new Promise<void>((resolve) => {
+    process.on("SIGINT", () => {
+      console.log("Shutting down feed aggregator...");
+      clearInterval(interval);
+      resolve();
+    });
+  });
+}*/
+/*
+import { fetchFeed } from "../lib/rss";
+
+export async function handlerAgg(_: string) {
+  const feedURL = "https://www.wagslane.dev/index.xml";
+
+  const feedData = await fetchFeed(feedURL);
+  const feedDataStr = JSON.stringify(feedData, null, 2);
+  console.log(feedDataStr);
+}*/
+
+import { getNextFeedToFetch, markFeedFetched } from "src/lib/db/queries/feeds";
+import { fetchFeed } from "./rss";
+import { Feed } from "src/lib/db/schema";
+import { parseDuration } from "src/lib/time";
+
+export async function handlerAgg(cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error(`usage: ${cmdName} <time_between_reqs>`);
+  }
+
+  const timeArg = args[0];
+  const timeBetweenRequests = parseDuration(timeArg);
+  if (!timeBetweenRequests) {
+    throw new Error(
+      `invalid duration: ${timeArg} — use format 1h 30m 15s or 3500ms`,
+    );
+  }
+
+  console.log(`Collecting feeds every ${timeArg}...`);
+
+  // run the first scrape immediately
+  scrapeFeeds().catch(handleError);
+
+  const interval = setInterval(() => {
+    scrapeFeeds().catch(handleError);
+  }, timeBetweenRequests);
+
+  await new Promise<void>((resolve) => {
+    process.on("SIGINT", () => {
+      console.log("Shutting down feed aggregator...");
+      clearInterval(interval);
+      resolve();
+    });
+  });
+}
+
+async function scrapeFeeds() {
+  const feed = await getNextFeedToFetch();
+  if (!feed) {
+    console.log(`No feeds to fetch.`);
+    return;
+  }
+  console.log(`Found a feed to fetch!`);
+  scrapeFeed(feed);
+}
+
+async function scrapeFeed(feed: Feed) {
+  await markFeedFetched(feed.id);
+
+  const feedData = await fetchFeed(feed.url);
+
+  console.log(
+    `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
+  );
+}
+
+function handleError(err: unknown) {
+  console.error(
+    `Error scraping feeds: ${err instanceof Error ? err.message : err}`,
+  );
 }

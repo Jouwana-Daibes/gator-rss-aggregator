@@ -27,8 +27,10 @@ export const feeds = pgTable("feeds", {
   url: text("url").notNull().unique(),
 
   userId: uuid("user_id")
-    .notNull()
     .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+    lastFetchedAt: timestamp("last_fetched_at"),
+	    
 })
 
 export type Feed = typeof feeds.$inferSelect
