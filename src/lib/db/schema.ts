@@ -1,5 +1,5 @@
 import { pgTable,timestamp, uuid, text, unique, serial } from "drizzle-orm/pg-core";
-import { users, feeds } from "./schema";
+// import { users, feeds } from "./schema";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -33,7 +33,7 @@ export const feeds = pgTable("feeds", {
 	    
 })
 
-export type Feed = typeof feeds.$inferSelect
+// export type Feed = typeof feeds.$inferSelect
 
 export const feedFollows = pgTable(
   "feed_follows",
@@ -53,9 +53,32 @@ export const feedFollows = pgTable(
   })
 );
 
+
+export const posts = pgTable("posts", {
+  id: uuid("id").primaryKey().defaultRandom().notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  title: text("title").notNull(),
+  url: text("url").notNull().unique(),
+  description: text("description"),
+  publishedAt: timestamp("published_at"),
+  feedId: uuid("feed_id")
+    .notNull()
+    .references(() => feeds.id, { onDelete: "cascade" }),
+});
+
+//export type NewPost = typeof posts.$inferInsert;
+
 export const schema = {
   users,
   feeds,
   feedFollows,
+  posts,
 };
 
+
+export type Feed = typeof feeds.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;

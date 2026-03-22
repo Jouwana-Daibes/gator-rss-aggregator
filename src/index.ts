@@ -12,7 +12,8 @@ import {
   handlerFollow,
   handlerFollowing,
   middlewareLoggedIn,
-  handlerUnfollow
+  handlerUnfollow,
+  handlerBrowse,
 } from "./commands.js";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -30,14 +31,13 @@ async function main() {
   registerCommand(registry, "reset", handlerReset);
   registerCommand(registry, "users", handlerList);
   registerCommand(registry, "agg", handlerAgg)
- // registerCommand(registry, "addfeed", handlerAddFeed)
- // registerCommand(registry, "follow", handlerFollow);
- //  registerCommand(registry, "following", handlerFollowing);
-registerCommand(registry, "addfeed", middlewareLoggedIn(handlerAddFeed))
-registerCommand(registry, "follow", middlewareLoggedIn(handlerFollow))
-registerCommand(registry, "following", middlewareLoggedIn(handlerFollowing))
-registerCommand(registry, "unfollow", middlewareLoggedIn(handlerUnfollow));
-  const args = process.argv.slice(2)
+  registerCommand(registry, "addfeed", middlewareLoggedIn(handlerAddFeed))
+  registerCommand(registry, "follow", middlewareLoggedIn(handlerFollow))
+  registerCommand(registry, "following", middlewareLoggedIn(handlerFollowing))
+  registerCommand(registry, "unfollow", middlewareLoggedIn(handlerUnfollow));
+  registerCommand(registry,"browse",middlewareLoggedIn(handlerBrowse));
+
+const args = process.argv.slice(2)
 
   if (args.length === 0) {
     console.error("Not enough arguments")

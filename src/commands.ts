@@ -3,13 +3,19 @@ import { createUser, getUserByName, getUserId } from "src/lib/db/queries/users";
 import { setUser, getUser, readConfig } from "./config"
 import { deleteAllUsers } from "src/lib/db/queries/users";
 import { getAllUsers } from "src/lib/db/queries/users";
-//import { fetchFeed } from "../lib/rss"
 import { createFeed, printFeed, getFeeds } from "./lib/db/queries/feeds"
 import { createFeedFollow, getFeedByUrl, getFeedFollowsForUser, deleteFeedFollow  } from "./lib/db/queries/feedFollows";
 import { feedFollows } from "./lib/db/schema";
 import { eq, and } from "drizzle-orm";
-//import { middlewareLoggedIn } from "./commands.js";
-//import { scrapeFeeds, parseDuration } from "./scrapeFeeds";
+import { getNextFeedToFetch, markFeedFetched } from "src/lib/db/queries/feeds";
+import { fetchFeed } from "./rss";
+import { Feed, NewPost } from "src/lib/db/schema";
+import { parseDuration } from "src/lib/time";
+import { createPost } from "src/lib/db/queries/posts";
+import { getPostsForUsers } from "src/lib/db/queries/posts";
+import type { User } from "src/lib/db/schema";
+
+
 // Command handler type
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>
 
@@ -102,20 +108,6 @@ export async function handlerList(cmdName: string, ...args: string[]) {
   }
 }
 
-/*
-export async function handlerAgg(cmdName: string, ...args: string[]) {
-  try {
-
-    const feed = await fetchFeed("https://www.wagslane.dev/index.xml")
-
-    console.log(JSON.stringify(feed, null, 2))
-
-  } catch (err) {
-    console.error("Error fetching feed:", err)
-    process.exit(1)
-  }
-}
-*/
 export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]) {
   // Join all args except the last one into the name
   const url = args[args.length - 1];
@@ -126,10 +118,6 @@ export async function handlerAddFeed(cmdName: string, user: User, ...args: strin
     console.error("Usage: addfeed <name> <url>")
     process.exit(1)
   }
-//  const config = readConfig();
-//  const currentUsername = config.currentUserName;
-//  const user = await getUserByName(currentUsername)
- //   const feed = await createFeed(name, url, user.id)
  // Create the feed in the DB
   const feedFollow = await createFeed(name, url, user.id);
 
@@ -161,39 +149,12 @@ export async function handlerFollow(cmdName: string,
     process.exit(1);
   }
 
-/*
-  const config = readConfig();
-  if (!config.currentUserName) {
-  	console.error("No user logged in. Please login first.");
- 	 process.exit(1);
-  }
-  const user = await getUserByName(config.currentUserName);
-  if (!user) {
-    console.error("Current user not found!");
-    process.exit(1);
-  }
-*/
   const feed = await getFeedByUrl(url);
   if (!feed) {
     console.error("Feed not found for URL:", url);
     process.exit(1);
   }
 
-/*const existingFollow = await db
-  .select()
-  .from(feedFollows)
-  .where(
-    and(
-      eq(feedFollows.userId, user.id),
-      eq(feedFollows.feedId, feed.id)
-    )
-  )
-  .limit(1)
-  ;
-  if (existingFollow.length > 0) {
-    console.log(`${user.name} is already following ${feed.name}`);
-    return;
-  }*/
 
   const follow = await createFeedFollow(user.id, feed.id);
   console.log(`${follow.userName} is now following ${follow.feedName}`);
@@ -203,12 +164,6 @@ export async function handlerFollow(cmdName: string,
 export async function handlerFollowing(  cmdName: string,
   user: User,
   ...args: string[]) {
-//  const config = readConfig();
- // const user = await getUserByName(config.currentUserName);
-   // if (!user) {
-   // console.error("User not found");
-   // process.exit(1);
- // }
   const follows = await getFeedFollowsForUser(user.id);
 
   for (const f of follows) {
@@ -262,44 +217,6 @@ export async function handlerUnfollow(cmdName: string, user: User, ...args: stri
   console.log(`${user.name} has unfollowed ${feed.name}`);
 }
 
-/*
-export async function handlerAgg(cmdName: string, ...args: string[]) {
-  const timeBetweenReqs = args[0];
-
-  const intervalMs = parseDuration(timeBetweenReqs);
-
-  console.log(`Collecting feeds every ${timeBetweenReqs}`);
-
-  await scrapeFeeds();
-
-  const interval = setInterval(() => {
-    scrapeFeeds().catch(console.error);
-  }, intervalMs);
-
-  await new Promise<void>((resolve) => {
-    process.on("SIGINT", () => {
-      console.log("Shutting down feed aggregator...");
-      clearInterval(interval);
-      resolve();
-    });
-  });
-}*/
-/*
-import { fetchFeed } from "../lib/rss";
-
-export async function handlerAgg(_: string) {
-  const feedURL = "https://www.wagslane.dev/index.xml";
-
-  const feedData = await fetchFeed(feedURL);
-  const feedDataStr = JSON.stringify(feedData, null, 2);
-  console.log(feedDataStr);
-}*/
-
-import { getNextFeedToFetch, markFeedFetched } from "src/lib/db/queries/feeds";
-import { fetchFeed } from "./rss";
-import { Feed } from "src/lib/db/schema";
-import { parseDuration } from "src/lib/time";
-
 export async function handlerAgg(cmdName: string, ...args: string[]) {
   if (args.length !== 1) {
     throw new Error(`usage: ${cmdName} <time_between_reqs>`);
@@ -341,10 +258,37 @@ async function scrapeFeeds() {
   scrapeFeed(feed);
 }
 
+/*
 async function scrapeFeed(feed: Feed) {
   await markFeedFetched(feed.id);
 
   const feedData = await fetchFeed(feed.url);
+
+  console.log(
+    `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
+  );
+}
+*/
+
+async function scrapeFeed(feed: Feed) {
+  await markFeedFetched(feed.id);
+
+  const feedData = await fetchFeed(feed.url);
+  for (let item of feedData.channel.item) {
+    console.log(`Found post: %s`, item.title);
+
+    const now = new Date();
+
+    await createPost({
+      url: item.link,
+      feedId: feed.id,
+      title: item.title,
+      createdAt: now,
+      updatedAt: now,
+      description: item.description,
+      publishedAt: new Date(item.pubDate),
+    } satisfies NewPost);
+  }
 
   console.log(
     `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
@@ -355,4 +299,31 @@ function handleError(err: unknown) {
   console.error(
     `Error scraping feeds: ${err instanceof Error ? err.message : err}`,
   );
+}
+
+export async function handlerBrowse(
+  cmdName: string,
+  user: User,
+  ...args: string[]
+) {
+  let limit = 2;
+  if (args.length === 1) {
+    let specifiedLimit = parseInt(args[0]);
+    if (specifiedLimit) {
+      limit = specifiedLimit;
+    } else {
+      throw new Error(`usage: ${cmdName} [limit]`);
+    }
+  }
+
+  const posts = await getPostsForUsers(user.id, limit);
+
+  console.log(`Found ${posts.length} posts for user ${user.name}`);
+  for (let post of posts) {
+    console.log(`${post.publishedAt} from ${post.feedName}`);
+    console.log(`--- ${post.title} ---`);
+    console.log(`    ${post.description}`);
+    console.log(`Link: ${post.url}`);
+    console.log(`=====================================`);
+  }
 }

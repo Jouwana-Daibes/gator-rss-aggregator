@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773088038160,
+      "tag": "0000_sturdy_plazm",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773158975923,
+      "tag": "0001_third_vindicator",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773263118500,
+      "tag": "0002_yellow_texas_twister",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1734119186466,
+      "tag": "0003_famous_wrecker",
+      "breakpoints": true
+    }
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1734120051732,
+      "tag": "0004_remarkable_pet_avengers",
+      "breakpoints": true
+  ]
+}
