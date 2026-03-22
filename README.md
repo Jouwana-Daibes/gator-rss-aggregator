@@ -60,7 +60,37 @@ Create a .gatorconfig.json file in your home directory with the following struct
 ```
 Replace <username> and <password> with your PostgreSQL credentials.
 
+# Command Overview
 
+- **register \<username>**:
+  This command registers a new user with the specified username. It will check if the user already exists and create a new user in the database if not.
+- **login \<username>**:
+  This command logs in a user by setting the current_user_name in the configuration. If the user does not exist, it throws an error.
+- **users**:
+Lists all the users in the PostgreSQL database.
+- **addfeed \<name> \<url>**: Add a new RSS feed to the database and automatically follow it with the current user.
+    - name → The display name of the feed.
+    - url → The RSS feed URL.
+    - Adds the feed to the database.
+    - Automatically sets the current user as a follower of the feed.
+- **follow \<url>**: Follow an existing feed for the current user.
+      - url → The RSS feed URL to follow.
+      - If the user is already following the feed, a message will indicate it.
+- **following**: List all feeds that the current user is following.
+- **unfollow \<url>**: Stop following a feed for the current user (Stop following a feed for the current user).
+- **agg \<inerval>**: Start the feed aggregator to collect new posts at a given interval.
+      - interval → Time between feed fetches (ms, s, m, h).
+      - Fetches posts from all feeds and stores them in the database.
+      - Runs continuously until interrupted (CTRL+C).
+  -**browse [limit]**: View the latest posts from feeds the current user follows.
+      - limit → Optional. Number of posts to display (default: 2).
+      - Shows post titles, URLs, and feed information.
+      - Posts are sorted from most recent to oldest.
+  ## Notes
+  - Make sure a user is logged in before using addfeed, follow, following, unfollow, or browse.
+  - The agg command requires feeds to be added first. otherwise, it keeps printing "No feed to fetch"
+  - The aggregator will only fetch posts that are not already stored in the database.
+  
 # Usage
 - Start the CLI tool
 - To start the Gator CLI tool, use the following commands:
@@ -76,16 +106,30 @@ Replace <username> and <password> with your PostgreSQL credentials.
     ```bash
     npm run start users
     ```
-    
-# Command Overview
-
-- **register \<username>**:
-  This command registers a new user with the specified username. It will check if the user already exists and create a new user in the database if not.
-- **login \<username>**:
-  This command logs in a user by setting the current_user_name in the configuration. If the user does not exist, it throws an error.
-- **users**:
-Lists all the users in the PostgreSQL database.
----
+  - addfeed:
+    ```bash
+    npm run start addfeed <name> <url>
+    ```
+  - follow:
+    ```bash
+    npm run start follow <url>
+    ```
+  - following:
+    ```bash
+    npm run start following
+    ```
+  - unfollow:
+    ```bash
+    npm run start unfollow <url>
+    ```
+   - agg:
+     ```bash
+     npm run start agg <interval>
+     ```
+  - browse:
+    ```bash
+    npm run start browse [limit]
+    ``` 
 # Development
 - Running Tests
 Make sure to run the tests to ensure everything works as expected.
