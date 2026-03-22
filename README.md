@@ -131,7 +131,15 @@ Lists all the users in the PostgreSQL database.
     npm run start browse [limit]
     ``` 
 # Adding New Commands
-You can extend Gator by adding new commands to the commands.ts file. Follow the existing structure of command handlers to register and run new commands.
-
+- You can extend Gator by adding new commands to the commands.ts file. Follow the existing structure of command handlers to register and run new commands.
+- If you'd like to make this project your own, here are some ideas:
+    - Add sorting and filtering options to the browse command
+    - Add pagination to the browse command
+    - Add concurrency to the agg command so that it can fetch more frequently
+    - Add a search command that allows for fuzzy searching of posts
+    - Add bookmarking or liking posts
+    - Add a TUI that allows you to select a post in the terminal and view it in a more readable format (either in the terminal or open in a browser)
+    - Add an HTTP API (and authentication/authorization) that allows other users to interact with the service remotely
+    - Write a service manager that keeps the agg command running in the background and restarts it if it crashes
 # License
 This project is licensed under the MIT License - see the LICENSE file for details.
