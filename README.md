@@ -79,9 +79,9 @@ Lists all the users in the PostgreSQL database.
 - **following**: List all feeds that the current user is following.
 - **unfollow \<url>**: Stop following a feed for the current user (Stop following a feed for the current user).
 - **agg \<inerval>**: Start the feed aggregator to collect new posts at a given interval.
-      - interval → Time between feed fetches (ms, s, m, h).
-      - Fetches posts from all feeds and stores them in the database.
-      - Runs continuously until interrupted (CTRL+C).
+    - interval → Time between feed fetches (ms, s, m, h).
+    - Fetches posts from all feeds and stores them in the database.
+    - Runs continuously until interrupted (CTRL+C).
   -**browse [limit]**: View the latest posts from feeds the current user follows.
       - limit → Optional. Number of posts to display (default: 2).
       - Shows post titles, URLs, and feed information.
@@ -130,12 +130,6 @@ Lists all the users in the PostgreSQL database.
     ```bash
     npm run start browse [limit]
     ``` 
-# Development
-- Running Tests
-Make sure to run the tests to ensure everything works as expected.
-```
-npm run test
-```
 # Adding New Commands
 You can extend Gator by adding new commands to the commands.ts file. Follow the existing structure of command handlers to register and run new commands.
 
