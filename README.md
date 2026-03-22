@@ -83,9 +83,9 @@ Lists all the users in the PostgreSQL database.
     - Fetches posts from all feeds and stores them in the database.
     - Runs continuously until interrupted (CTRL+C).
 - **browse [limit]**: View the latest posts from feeds the current user follows.
-      - limit → Optional. Number of posts to display (default: 2).
-      - Shows post titles, URLs, and feed information.
-      - Posts are sorted from most recent to oldest.
+    - limit → Optional. Number of posts to display (default: 2).
+    - Shows post titles, URLs, and feed information.
+    - Posts are sorted from most recent to oldest.
   ## Notes
   - Make sure a user is logged in before using addfeed, follow, following, unfollow, or browse.
   - The agg command requires feeds to be added first. otherwise, it keeps printing "No feed to fetch"
